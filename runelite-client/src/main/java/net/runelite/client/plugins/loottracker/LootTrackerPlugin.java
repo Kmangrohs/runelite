@@ -37,14 +37,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.Client;
-import net.runelite.api.InventoryID;
-import net.runelite.api.ItemComposition;
-import net.runelite.api.ItemContainer;
-import net.runelite.api.NPC;
-import net.runelite.api.Player;
-import net.runelite.api.SpriteID;
+import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.WidgetLoaded;
@@ -73,6 +66,11 @@ public class LootTrackerPlugin extends Plugin
 	// Activity/Event loot handling
 	private static final Pattern CLUE_SCROLL_PATTERN = Pattern.compile("You have completed [0-9]+ ([a-z]+) Treasure Trails.");
 	private static final int THEATRE_OF_BLOOD_REGION = 12867;
+
+	// Used when getting High Alchemy value - multiplied by general store price.
+	private static final float HIGH_ALCHEMY_CONSTANT = 0.6f;
+	// ItemID for coins
+	private static final int COINS = ItemID.COINS_995;
 
 	@Inject
 	private ClientToolbar clientToolbar;
@@ -257,15 +255,23 @@ public class LootTrackerPlugin extends Plugin
 	{
 		return itemStacks.stream().map(itemStack ->
 		{
+
+
 			final ItemComposition itemComposition = itemManager.getItemComposition(itemStack.getId());
-			final int realItemId = itemComposition.getNote() != -1 ? itemComposition.getLinkedNoteId() : itemStack.getId();
-			final long price = (long) itemManager.getItemPrice(realItemId) * (long) itemStack.getQuantity();
+			final int realItemId = itemComposition.getNote() != -1 ? itemComposition.getLinkedNoteId() : itemComposition.getId();
+			final int itemPrice = itemManager.getItemPrice(realItemId);
+			final int price = itemPrice <= 0 ? itemComposition.getPrice() : itemPrice;
+			final int haPrice = Math.round(price * HIGH_ALCHEMY_CONSTANT);
+
+
+			//TODO once config option in loot tracker for GE/HA or GE or HA update finalPrice accordingly
+			final int finalPrice = haPrice;
 
 			return new LootTrackerItem(
 				itemStack.getId(),
 				itemComposition.getName(),
 				itemStack.getQuantity(),
-				price);
+					finalPrice);
 		}).toArray(LootTrackerItem[]::new);
 	}
 }
