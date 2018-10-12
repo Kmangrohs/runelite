@@ -76,6 +76,8 @@ import net.runelite.client.plugins.grounditems.config.MenuHighlightMode;
 import static net.runelite.client.plugins.grounditems.config.MenuHighlightMode.BOTH;
 import static net.runelite.client.plugins.grounditems.config.MenuHighlightMode.NAME;
 import static net.runelite.client.plugins.grounditems.config.MenuHighlightMode.OPTION;
+import net.runelite.client.plugins.grounditems.config.PriceDisplayMode;
+
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.StackFormatter;
@@ -436,31 +438,38 @@ public class GroundItemsPlugin extends Plugin
 		config.setHighlightedItem(COMMA_JOINER.join(highlightedItemSet));
 	}
 
-	Color getHighlighted(String item, int gePrice, int haPrice)
-	{
-		if (TRUE.equals(highlightedItems.getUnchecked(item)))
-		{
+	Color getHighlighted(String item, int gePrice, int haPrice) {
+		if (TRUE.equals(highlightedItems.getUnchecked(item))) {
 			return config.highlightedColor();
 		}
 
 		// Explicit hide takes priority over implicit highlight
-		if (TRUE.equals(hiddenItems.getUnchecked(item)))
-		{
+		if (TRUE.equals(hiddenItems.getUnchecked(item))) {
 			return null;
 		}
 
-		for (Map.Entry<Integer, Color> entry : priceChecks.entrySet())
-		{
-			if (gePrice > entry.getKey() || haPrice > entry.getKey())
-			{
-				return entry.getValue();
+		for (Map.Entry<Integer, Color> entry : priceChecks.entrySet()) {
+			if (config.priceDisplayMode() == PriceDisplayMode.BOTH) {
+
+				if (gePrice > entry.getKey() || haPrice > entry.getKey()) {
+					return entry.getValue();
+				}
+			} else if (config.priceDisplayMode() == PriceDisplayMode.GE) {
+
+				if (gePrice > entry.getKey()) {
+					return entry.getValue();
+				}
+			} else if (config.priceDisplayMode() == PriceDisplayMode.HA) {
+				if (haPrice > entry.getKey()) {
+					return entry.getValue();
+				}
 			}
 		}
 
 		return null;
 	}
 
-	Color getHidden(String item, int gePrice, int haPrice, boolean isTradeable)
+		Color getHidden(String item, int gePrice, int haPrice, boolean isTradeable)
 	{
 		final boolean isExplicitHidden = TRUE.equals(hiddenItems.getUnchecked(item));
 		final boolean isExplicitHighlight = TRUE.equals(highlightedItems.getUnchecked(item));
