@@ -224,14 +224,14 @@ public class GroundItemsOverlay extends Overlay
 
 			if (config.priceDisplayMode() == PriceDisplayMode.BOTH)
 			{
-				if (item.getGePrice() > 0)
+				if (item.getGePrice() > 0 && !item.getName().equals("Coins"))
 				{
 					itemStringBuilder.append(" (EX: ")
 						.append(StackFormatter.quantityToStackSize(item.getGePrice()))
 						.append(" gp)");
 				}
 
-				if (item.getHaPrice() > 0)
+				if (item.getHaPrice() > 0 && !item.getName().equals("Coins"))
 				{
 					itemStringBuilder.append(" (HA: ")
 						.append(StackFormatter.quantityToStackSize(item.getHaPrice()))
@@ -244,7 +244,7 @@ public class GroundItemsOverlay extends Overlay
 					? item.getGePrice()
 					: item.getHaPrice();
 
-				if (price > 0)
+				if (price > 0 && !item.getName().equals("Coins"))
 				{
 					itemStringBuilder
 						.append(" (")
